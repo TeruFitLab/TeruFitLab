@@ -40,11 +40,10 @@
       text-align: center;
     }
 
-    .before-after {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      margin: 30px 0;
+    .before-after img {
+      max-width: 75%;
+      height: auto;
+      margin: 0 auto;
     }
 
     .before-after img {
@@ -56,9 +55,11 @@
     @media (min-width: 700px) {
       .before-after {
         flex-direction: row;
+        justify-content: center;
+        gap: 20px;
       }
       .before-after img {
-        width: 48%;
+        max-width: 45%;
       }
     }
 
