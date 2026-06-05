@@ -46,3 +46,15 @@ img {
   border-radius: 8px;
   font-weight: bold;
 }
+
+/* ===== Backボタン共通 ===== */
+.back-link {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.back-link a {
+  color: #333;
+  text-decoration: none;
+  font-weight: bold;
+}
