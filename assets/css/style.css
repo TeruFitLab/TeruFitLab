@@ -14,18 +14,21 @@ h1 {
   text-align: center;
   white-space: nowrap;
 
-  /* 最小1.3rem、理想4vw、最大2.2rem（今の最大値） */
+  /* 最小1.3rem、理想4vw、最大2.2rem（今の値を上限に） */
   font-size: clamp(1.3rem, 4vw, 2.2rem);
 }
 
-/* 画面が狭いときの微調整（必要なら残す） */
+/* 画面が狭いときの微調整 */
 @media (max-width: 500px) {
-  h1 { font-size: clamp(1.2rem, 5vw, 1.6rem); }
+  h1 {
+    font-size: clamp(1.2rem, 5vw, 1.6rem);
+  }
 }
 
 @media (max-width: 360px) {
-  h1 { font-size: clamp(1.1rem, 6vw, 1.3rem); }
-}
+  h1 {
+    font-size: clamp(1.1rem, 6vw, 1.3rem);
+  }
 
 /* ===== 画像：全ページで75%幅 ===== */
 img {
