@@ -1,1 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>キャリパー法 体脂肪率計算ツール</title>
+
+<style>
+  h1 {
+    margin-bottom: 20px;
+  }
+
+  .box {
+    width: 90%;
+    max-width: 700px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: left;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+
+  label {
+    font-weight: bold;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 20px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 12px;
+    background: #333;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+
+  .btn:hover {
+    background: #555;
+  }
+
+  .result-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .result-box input {
+    width: 120px;
+    font-weight: bold;
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<h1>キャリパー法 体脂肪率計算ツール</h1>
+
+<div class="box">
+
+  <!-- 計算方法選択 -->
+  <label>計算方法</label>
+  <select id="method" onchange="updateDescription()">
+    <option value="jp3">Jackson & Pollock（3点法）</option>
+    <option value="jp7">Jackson & Pollock（7点法）</option>
+    <option value="dw4">Durnin & Womersley（4点法）</option>
+    <option value="evans">Evans式（アスリート向け）</option>
+  </select>
+
+  <!-- 説明文 -->
+  <div id="description" style="white-space:pre-line; margin-bottom:20px;"></div>
+
+  <!-- 共通入力欄 -->
+  <label>全部位の測定結果の合計値 (mm)</label>
+  <input type="number" id="sumX" placeholder="半角数字のみ">
+
+  <label>性別</label>
+  <select id="gender">
+    <option value="male">男性</option>
+    <option value="female">女性</option>
+  </select>
+
+  <!-- Durnin & Womersley 専用 -->
+  <div id="ageBox" style="display:none;">
+    <label>年齢</label>
+    <input type="number" id="ageDW" placeholder="半角数字のみ">
+  </div>
+
+  <!-- Evans式 専用 -->
+  <div id="raceBox" style="display:none;">
+    <label>体質（Ethnicity）</label>
+    <select id="race">
+      <option value="0">アジア系</option>
+      <option value="0">白人系</option>
+      <option value="1">アフリカ系</option>
+    </select>
+  </div>
+
+  <!-- 計算ボタン -->
+  <button class="btn" onclick="calculate()">体脂肪率を計算する</button>
+
+  <!-- 結果 -->
+  <div class="result-box" style="margin-top:20px;">
+    <label>結果：</label>
+    <input type="text" id="result" readonly>
+    <span>%</span>
+  </div>
+
+</div>
+
+<script>
+/* --- 説明文 --- */
+function updateDescription() {
+  const method = document.getElementById("method").value;
+  const desc = document.getElementById("description");
+  const ageBox = document.getElementById("ageBox");
+  const raceBox = document.getElementById("raceBox");
+
+  ageBox.style.display = "none";
+  raceBox.style.display = "none";
+
+  if (method === "jp3") {
+    desc.textContent =
+`【特徴】
+一般〜中級者向け（男12〜25% / 女20〜35%）
+
+【測定部位】
+3点法（男性）：胸・腹・大腿
+3点法（女性）：上腕裏・へその横・大腿`;
+  }
+
+  if (method === "jp7") {
+    desc.textContent =
+`【特徴】
+一般〜中級者向け（男12〜25% / 女20〜35%）
+
+【測定部位】
+7点法（男女共通）：胸・腹・大腿・上腕裏・肩甲骨下・脇腹・腰`;
+  }
+
+  if (method === "dw4") {
+    desc.textContent =
+`【特徴】
+年齢補正あり
+一般人・高齢者向け（男15%以上 / 女25%以上）
+体脂肪率が高めでも安定
+
+【測定部位】
+4点法（男女共通）：上腕裏・肩甲骨下・脇腹・腹部`;
+    ageBox.style.display = "block";
+  }
+
+  if (method === "evans") {
+    desc.textContent =
+`【特徴】
+アスリート・大会勢向け
+皮下脂肪が薄いほど精度が高い
+減量末期に最も安定
+
+【測定部位】
+3点法（男女共通）：上腕裏・へその横・大腿`;
+    raceBox.style.display = "block";
+  }
+}
+
+updateDescription();
+
+/* --- 計算処理 --- */
+function calculate() {
+  const method = document.getElementById("method").value;
+  const gender = document.getElementById("gender").value;
+  const X = Number(document.getElementById("sumX").value);
+  const ageDW = Number(document.getElementById("ageDW").value);
+  const race = Number(document.getElementById("race").value);
+
+  let BD = 0;
+  let bodyfat = 0;
+
+  /* Jackson & Pollock 3点法 */
+  if (method === "jp3") {
+    const age = ageDW; // 年齢必要
+    if (gender === "male") {
+      BD = 1.10938 - 0.0008267 * X + 0.0000016 * X * X - 0.0002574 * age;
+    } else {
+      BD = 1.0994921 - 0.0009929 * X + 0.0000023 * X * X - 0.0001392 * age;
+    }
+    bodyfat = 495 / BD - 450;
+  }
+
+  /* Jackson & Pollock 7点法 */
+  if (method === "jp7") {
+    const age = ageDW;
+    if (gender === "male") {
+      BD = 1.112 - 0.00043499 * X + 0.00000055 * X * X - 0.00028826 * age;
+    } else {
+      BD = 1.097 - 0.00046971 * X + 0.00000056 * X * X - 0.00012828 * age;
+    }
+    bodyfat = 495 / BD - 450;
+  }
+
+  /* Durnin & Womersley 4点法 */
+  if (method === "dw4") {
+    const age = ageDW;
+    let c = 0, m = 0;
+
+    if (gender === "male") {
+    if (age >= 17 && age <= 19) { c = 1.1620; m = 0.0630; }
+    else if (age >= 20 && age <= 29) { c = 1.1631; m = 0.0632; }
+    else if (age >= 30 && age <= 39) { c = 1.1422; m = 0.0544; }
+    else if (age >= 40 && age <= 49) { c = 1.1620; m = 0.0700; }
+    else if (age >= 50) { c = 1.1715; m = 0.0779; }
+  } else {
+    if (age >= 17 && age <= 19) { c = 1.1549; m = 0.0678; }
+    else if (age >= 20 && age <= 29) { c = 1.1599; m = 0.0717; }
+    else if (age >= 30 && age <= 39) { c = 1.1423; m = 0.0632; }
+    else if (age >= 40 && age <= 49) { c = 1.1333; m = 0.0612; }
+    else if (age >= 50) { c = 1.1339; m = 0.0645; }
+  }
+
+    BD = c - m * Math.log10(X);
+    bodyfat = 495 / BD - 450;
+  }
+
+  /* Evans式 */
+  if (method === "evans") {
+    if (gender === "male") {
+      bodyfat = 8.997 + 0.24658 * X - 6.343 + 1.998 * race;
+    } else {
+      bodyfat = 8.997 + 0.24658 * X + 1.998 * race;
+    }
+  }
+
+  document.getElementById("result").value = bodyfat.toFixed(2);
+}
+</script>
+
+</body>
+</html>
 
